@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="ur5_plus_RUTH">
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/base.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual> 
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/base.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.0"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.00443333156" ixy="0.0" ixz="0.0" iyy="0.00443333156" iyz="0.0" izz="0.0072"/>
+    </inertial>
+  </link>
+
+  <joint name="shoulder_pan_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin rpy="0.0 0.0 3.14" xyz="0.0 0.0 0.089159"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="shoulder_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/shoulder.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/shoulder.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.7"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.5"/>
+      <inertia ixx="0.010267495893" ixy="0.0" ixz="0.0" iyy="0.010267495893" iyz="0.0" izz="0.00666"/>
+    </inertial>
+  </link>
+  <joint name="shoulder_lift_joint" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin rpy="0.0 4.8 0.0" xyz="0.0 0.13585 0.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="upper_arm_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/upperarm.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/upperarm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="8.393"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.28"/>
+      <inertia ixx="0.22689067591" ixy="0.0" ixz="0.0" iyy="0.22689067591" iyz="0.0" izz="0.0151074"/>
+    </inertial>
+  </link>
+  <joint name="elbow_joint" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.1197 0.425"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="forearm_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/forearm.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/forearm.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.275"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.25"/>
+      <inertia ixx="0.049443313556" ixy="0.0" ixz="0.0" iyy="0.049443313556" iyz="0.0" izz="0.004095"/>
+    </inertial>
+  </link>
+  <joint name="wrist_1_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_1_link"/>
+    <origin rpy="0.0 1.57079632679 0.0" xyz="0.0 0.0 0.39225"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="wrist_1_link">
+    <visual>
+
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/wrist1.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/wrist1.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.219"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.111172755531" ixy="0.0" ixz="0.0" iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
+    </inertial>
+  </link>
+  <joint name="wrist_2_joint" type="revolute">
+    <parent link="wrist_1_link"/>
+    <child link="wrist_2_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="wrist_2_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/wrist2.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/wrist2.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.219"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.111172755531" ixy="0.0" ixz="0.0" iyy="0.111172755531" iyz="0.0" izz="0.21942"/>
+    </inertial>
+  </link>
+  <joint name="wrist_3_joint" type="revolute">
+    <parent link="wrist_2_link"/>
+    <child link="wrist_3_link"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.09465"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="300.0" lower="-3.14159265359" upper="3.14159265359" velocity="10"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+  <link name="wrist_3_link">
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/ur5/visual/wrist3.obj"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/ur5/collision/wrist3.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1879"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.0171364731454" ixy="0.0" ixz="0.0" iyy="0.0171364731454" iyz="0.0" izz="0.033822"/>
+    </inertial>
+  </link>
+  <joint name="ee_fixed_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="ee_link"/>
+    <origin rpy="0.0 0.0 1.57079632679" xyz="0.0 0.0823 0.0"/>
+  </joint>
+  <link name="ee_link">
+    <collision>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="-0.01 0 0"/>
+    </collision>
+  </link>
+
+  <!--################################################
+  ########          connect model                #####
+  ####################################################-->
+
+  <!-- connect arm to world -->
+  <link name="world"/>
+  <joint name="world_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin rpy="0.0 0.0 0" xyz="0.0 0.0 0.1"/>
+  </joint>
+  <!-- connect gripper to arm -->
+ <!--  <joint name="arm_gripper_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="robotiq_85_adapter_link"/>
+    <origin rpy="0.0 0.0 1.5708" xyz="0.0 0.089 0.0"/>
+  </joint> -->
+
+  <link
+    name="ruth_base">
+    <inertial>
+      <origin
+        xyz="0.127077766283005 -0.0191621330302985 0.1384522158111"
+        rpy="0 0 0" />
+      <mass
+        value="0.2034522422309" />
+      <inertia
+        ixx="0.000374416249530274"
+        ixy="-1.93330020521375E-06"
+        ixz="-5.95746646598714E-07"
+        iyy="0.000346388296121358"
+        iyz="9.53964135617315E-06"
+        izz="0.000638064486414968" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ruth_ur5_joint"
+    type="fixed">
+    <origin
+      xyz="-0.12725 -0.015 -0.02055"
+      rpy="-1.57 0 0" />
+    <parent
+      link="wrist_3_link" />
+    <child
+      link="ruth_base" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+
+
+  <link
+    name="tcp">
+    <inertial>
+      <origin
+        xyz="-4.85522099191726E-08 0.00754176115850061 0.00980207436679198"
+        rpy="0 0 0" />
+      <mass
+        value="0.0001" />
+      <inertia
+        ixx="1.78457989700508E-06"
+        ixy="-9.24736128227175E-13"
+        ixz="1.00313454096253E-11"
+        iyy="2.01750856012629E-06"
+        iyz="-3.16852779957069E-07"
+        izz="6.87048179378842E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.001" radius="0.001"/>
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.001" radius="0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="tcp_joint"
+    type="fixed">
+    <origin
+      xyz="0.12725 0.0069455 0.17"
+      rpy="0 0 0" />
+    <parent
+      link="ruth_base" />
+    <child
+      link="tcp" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+  <link
+    name="Link_1">
+    <inertial>
+      <origin
+        xyz="-4.85522099191726E-08 0.00754176115850061 0.00980207436679198"
+        rpy="0 0 0" />
+      <mass
+        value="0.0106954297331709" />
+      <inertia
+        ixx="1.78457989700508E-06"
+        ixy="-9.24736128227175E-13"
+        ixz="1.00313454096253E-11"
+        iyy="2.01750856012629E-06"
+        iyz="-3.16852779957069E-07"
+        izz="6.87048179378842E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Link_1"
+    type="continuous">
+    <origin
+      xyz="0.16225 0.0069455 0.17"
+      rpy="1.5708 0 0" />
+    <parent
+      link="ruth_base" />
+    <child
+      link="Link_1" />
+    <axis
+      xyz="0 1 0" />
+    <limit lower="-1.57079632679" upper="3.1416" effort="100000" velocity="300000"/>
+  </joint>
+  <link
+    name="Link_2">
+    <inertial>
+      <origin
+        xyz="-0.0138504507471105 0.00298913196612882 0.0239892494327788"
+        rpy="0 0 0" />
+      <mass
+        value="0.0081155769847565" />
+      <inertia
+        ixx="4.24624272679738E-06"
+        ixy="-1.0839998191557E-07"
+        ixz="2.27278814057608E-06"
+        iyy="5.77733675951076E-06"
+        iyz="1.87767521060012E-07"
+        izz="1.62176930787311E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Link_2"
+    type="continuous">
+    <origin
+      xyz="0 0.0198 0.025"
+      rpy="0 0 0" />
+    <parent
+      link="Link_1" />
+    <child
+      link="Link_2" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_1A">
+    <inertial>
+      <origin
+        xyz="-0.00279862078801177 0.0117506775312538 0.00146744230773752"
+        rpy="0 0 0" />
+      <mass
+        value="0.00785370565672167" />
+      <inertia
+        ixx="8.46253699668518E-07"
+        ixy="-4.44903495207771E-08"
+        ixz="1.63079150535208E-08"
+        iyy="6.74699672174807E-07"
+        iyz="2.3327010744044E-08"
+        izz="8.68810334780057E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_1A"
+    type="continuous">
+    <origin
+      xyz="0 0.0120000000000001 0"
+      rpy="0 0 0" />
+    <parent
+      link="Link_2" />
+    <child
+      link="Phal_1A" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_1B">
+    <inertial>
+      <origin
+        xyz="0.0120982667168436 -0.00600000125632763 -0.0204718089290909"
+        rpy="0 0 0" />
+      <mass
+        value="0.0131173787903579" />
+      <inertia
+        ixx="2.03432557340068E-06"
+        ixy="-7.39160352105682E-13"
+        ixz="9.01275696643256E-07"
+        iyy="2.47473730017538E-06"
+        iyz="2.78695009766931E-12"
+        izz="1.22834934020072E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_1B"
+    type="continuous">
+    <origin
+      xyz="0.00278624044845138 0.0279999999999999 0.00531383704712683"
+      rpy="1.5707963267949 0.48292697765172 0" />
+    <parent
+      link="Phal_1A" />
+    <child
+      link="Phal_1B" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_1C">
+    <inertial>
+      <origin
+        xyz="-0.0110468357804479 0.0100000213789645 -0.0200264772819169"
+        rpy="0 0 0" />
+      <mass
+        value="0.0104118545526638" />
+      <inertia
+        ixx="1.47494552322991E-06"
+        ixy="-3.74180497248539E-13"
+        ixz="-3.96153464604467E-07"
+        iyy="1.59524742849828E-06"
+        iyz="5.37052654497466E-12"
+        izz="8.01070476166137E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1C.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_1C.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_1C"
+    type="continuous">
+    <origin
+      xyz="0.0258033817734561 -0.016 -0.0398802644055086"
+      rpy="0 0 0" />
+    <parent
+      link="Phal_1B" />
+    <child
+      link="Phal_1C" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Link_3">
+    <inertial>
+      <origin
+        xyz="-4.85522098914171E-08 0.00754176115850064 0.00980207436679202"
+        rpy="0 0 0" />
+      <mass
+        value="0.0106954297331709" />
+      <inertia
+        ixx="1.78457989700509E-06"
+        ixy="-9.24736128471064E-13"
+        ixz="1.0031345410212E-11"
+        iyy="2.0175085601263E-06"
+        iyz="-3.1685277995707E-07"
+        izz="6.8704817937884E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Link_3"
+    type="continuous">
+    <origin
+      xyz="0.0922534097079191 0.00694554989226147 0.169997985422611"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="ruth_base" />
+    <child
+      link="Link_3" />
+    <axis
+      xyz="0 1 0" />
+    <limit lower="-3.1416" upper="1.57079632679" effort="100000" velocity="300000"/>
+  </joint>
+  <link
+    name="Link_4">
+    <inertial>
+      <origin
+        xyz="0.0139032099348594 -0.00302765430432597 0.0240810659954725"
+        rpy="0 0 0" />
+      <mass
+        value="0.00851266701882223" />
+      <inertia
+        ixx="4.45344908990661E-06"
+        ixy="-1.21626377517706E-07"
+        ixz="-2.38724538041822E-06"
+        iyy="6.05231136866237E-06"
+        iyz="-2.10663065401218E-07"
+        izz="1.69689556389439E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Link_4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Link_4"
+    type="continuous">
+    <origin
+      xyz="0 0.0297999999999999 0.025"
+      rpy="0 0 0" />
+    <parent
+      link="Link_3" />
+    <child
+      link="Link_4" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Phal_2A">
+    <inertial>
+      <origin
+        xyz="0.00273512307932779 0.0117506764902445 0.00158264221325107"
+        rpy="0 0 0" />
+      <mass
+        value="0.00785370643177855" />
+      <inertia
+        ixx="8.47653530081637E-07"
+        ixy="4.34797730970517E-08"
+        ixz="-1.71922555076792E-08"
+        iyy="6.74699696381469E-07"
+        iyz="2.51605438037303E-08"
+        izz="8.67410355207584E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_2A"
+    type="continuous">
+    <origin
+      xyz="0 0.00200000000000009 0"
+      rpy="0 0 0" />
+    <parent
+      link="Link_4" />
+    <child
+      link="Phal_2A" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Phal_2B">
+    <inertial>
+      <origin
+        xyz="-0.0131448589539002 -0.00599999942369064 0.0198160499292389"
+        rpy="0 0 0" />
+      <mass
+        value="0.0131173778723872" />
+      <inertia
+        ixx="1.93868931541914E-06"
+        ixy="8.1090897421688E-13"
+        ixz="9.38206994091701E-07"
+        iyy="2.47473707392019E-06"
+        iyz="-2.69713536645353E-12"
+        izz="1.32398571321504E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_2B"
+    type="continuous">
+    <origin
+      xyz="0.00300504673980075 0.0280000000000006 -0.0051932354165403"
+      rpy="-1.5707963267949 -0.524570293743958 0" />
+    <parent
+      link="Phal_2A" />
+    <child
+      link="Phal_2B" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_2C">
+    <inertial>
+      <origin
+        xyz="0.0105982261427687 0.00999993953813486 0.0202674497473194"
+        rpy="0 0 0" />
+      <mass
+        value="0.010411775765542" />
+      <inertia
+        ixx="1.49223764913058E-06"
+        ixy="6.31047626059957E-12"
+        ixz="-3.80761404238619E-07"
+        iyy="1.59524752766758E-06"
+        iyz="-5.23230553658732E-12"
+        izz="7.8376177593463E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2C.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_2C.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_2C"
+    type="continuous">
+    <origin
+      xyz="-0.0278391879689591 -0.0160000000000013 0.0384867459423299"
+      rpy="0 0 0" />
+    <parent
+      link="Phal_2B" />
+    <child
+      link="Phal_2C" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_3A">
+    <inertial>
+      <origin
+        xyz="-4.64824360325855E-05 0.011844185627141 -0.00322077743623221"
+        rpy="0 0 0" />
+      <mass
+        value="0.00771334926048967" />
+      <inertia
+        ixx="8.69372993344747E-07"
+        ixy="-7.58373494813342E-10"
+        ixz="-5.44845564135252E-10"
+        iyy="6.68679153896794E-07"
+        iyz="-5.26155130297695E-08"
+        izz="8.31468833010338E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_3A"
+    type="continuous">
+    <origin
+      xyz="0.0350000000000004 0.00199999999999995 0.0606217782649105"
+      rpy="0 0 0" />
+    <parent
+      link="Link_4" />
+    <child
+      link="Phal_3A" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Phal_3B">
+    <inertial>
+      <origin
+        xyz="0.0122199440830796 0.00600000443296307 0.0203994109254921"
+        rpy="0 0 0" />
+      <mass
+        value="0.013117381098351" />
+      <inertia
+        ixx="2.02356420154645E-06"
+        ixy="1.28745041276076E-13"
+        ixz="-9.06010079315065E-07"
+        iyy="2.4747368223954E-06"
+        iyz="2.48875417568044E-12"
+        izz="1.23910996344089E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_3B"
+    type="continuous">
+    <origin
+      xyz="-0.00599937573877415 0.0280000000000002 8.65490901570121E-05"
+      rpy="-1.57079632681614 -1.55637097814385 0" />
+    <parent
+      link="Phal_3A" />
+    <child
+      link="Phal_3B" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="Phal_3C">
+    <inertial>
+      <origin
+        xyz="-0.0104045890346146 -0.00999997172809375 0.0203675725911235"
+        rpy="0 0 0" />
+      <mass
+        value="0.0104117583337008" />
+      <inertia
+        ixx="1.4994276720962E-06"
+        ixy="5.5090389658656E-12"
+        ixz="3.73942361423553E-07"
+        iyy="1.59524806853242E-06"
+        iyz="3.20115850053571E-12"
+        izz="7.76567341801856E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3C.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/RUTH/Phal_3C.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint_Phal_3C"
+    type="continuous">
+    <origin
+      xyz="0.0260403731007842 0.0160000000000001 0.0397259231330368"
+      rpy="0 0 0" />
+    <parent
+      link="Phal_3B" />
+    <child
+      link="Phal_3C" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+</robot>

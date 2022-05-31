@@ -1,0 +1,14 @@
+NOTES on URDF Joint types
+0: revolute
+0?: continuous
+2: prismatic
+3: 
+4: fixed
+5: planar
+
+revolute - a hinge joint that rotates along the axis and has a limited range specified by the upper and lower limits.
+continuous - a continuous hinge joint that rotates around the axis and has no upper and lower limits.
+prismatic - a sliding joint that slides along the axis, and has a limited range specified by the upper and lower limits.
+fixed - This is not really a joint because it cannot move. All degrees of freedom are locked. This type of joint does not require the axis, calibration, dynamics, limits or safety_controller.
+floating - This joint allows motion for all 6 degrees of freedom.
+planar - This joint allows motion in a plane perpendicular to the axis.
