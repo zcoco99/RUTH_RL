@@ -1,16 +1,17 @@
-# Stable-baseline3 PPO
+# Stable-baseline3 SAC
 import gym
 import numpy as np
 import pybullet
 import os
 
-from stable_baselines3 import PPO, SAC
+from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.ppo.policies import MlpPolicy
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common import results_plotter
 
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):
@@ -57,30 +58,36 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
 
         return True
 
-models_dir = "models/PPO"
-models_path = f"{models_dir}/170000.zip"
-
-logdir = "logs"
-os.makedirs(models_dir, exist_ok=True)
-os.makedirs(models_dir, exist_ok=True)
-
 
 # Create and wrap the environment
+log_dir = "./tmp/log/"
+os.makedirs(log_dir, exist_ok=True)
+
 env = gym.make('kelin-v0',version="DIRECT")
-model = PPO("MlpPolicy", env, verbose = 1)
+env = Monitor(env, log_dir)
 
-callback = SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=logdir)
+# Create the callback: check every 1000 steps
+callback = SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=log_dir)
 
-
-TIMESTEPS = 10000
-for i in range(1):
-	# Train the agent 
-	model.learn(total_timesteps=1)
-	model.save(f"{models_dir}/{TIMESTEPS*i}")
+# Evaluate the model every 1000 steps on 5 test episodes and save the evaluation to the logs folder
+model = SAC("MlpPolicy", env, verbose = 1, learning_rate=1e-3, create_eval_env=True)
+model.learn(total_timesteps=int(5e4), callback=callback, eval_freq=1000, n_eval_episodes=5, eval_log_path=log_dir)
 
 
+#Save policy only
+policy = model.policy
+policy.save("sac_policy.pkl")
+env = model.get_env()
 
 
+results_plotter.plot_results([log_dir], 1e5, results_plotter.X_TIMESTEPS, "SAC output")
 
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=1)
-print(f"mean_reward:{mean_reward:.2f} +/- {std_reward:.2f}")
+
+#Evaluate policy
+# mean_reward, std_reward = evaluate_policy(policy, env, n_eval_episodes=10, deterministic=True)
+# print(f"mean_reward={mean_reward:.2f} +/- {std_reward}")
+
+# Evaluate the loaded policy
+# saved_policy = MlpPolicy.load("sac_policy.pkl")
+# mean_reward, std_reward = evaluate_policy(saved_policy, env, n_eval_episodes=10, deterministic=True)
+# print(f"mean_reward={mean_reward:.2f} +/- {std_reward}")

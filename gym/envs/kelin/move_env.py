@@ -25,45 +25,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from random import choice
 
-class FingerAngles:
-    def __init__(self, robot, linkNameToID):
-        self.robot = robot
-        self.linkNameToID = linkNameToID
-        Phal_1A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_1A'])
-        Phal_2A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_2A'])
-        Phal_3A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_3A'])
-        P2 = np.array(Phal_1A_info[0][0:2])
-        P3 = np.array(Phal_2A_info[0][0:2])
-        P4 = np.array(Phal_3A_info[0][0:2])
-        C = (P2+P3+P4)/3
-        P2C = C-P2
-        P3C = C-P3
-        P4C = C-P4
-        P2P3 = P3-P2
-        P3P4 = P4-P3
-        angle1 = np.arctan2(P2P3[0]*P2C[1]-P2P3[1]*P2C[0],P2P3[0]*P2C[0]+P2P3[1]*P2C[1])
-        angle2 = np.arctan2(P2P3[0]*P3C[1]-P2P3[1]*P3C[0],P2P3[0]*P3C[0]+P2P3[1]*P3C[1])
-        angle3 = np.arctan2(P3P4[0]*P4C[1]-P3P4[1]*P4C[0],P3P4[0]*P4C[0]+P3P4[1]*P4C[1])
-        self.init_angles = [angle1, angle2, angle3]
-
-    def calc_finger_angles(self):
-        Phal_1A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_1A'])
-        Phal_2A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_2A'])
-        Phal_3A_info = pybullet.getLinkState(self.robot, self.linkNameToID['Phal_3A'])
-        P2 = np.array(Phal_1A_info[0][0:2])
-        P3 = np.array(Phal_2A_info[0][0:2])
-        P4 = np.array(Phal_3A_info[0][0:2])
-        C = (P2+P3+P4)/3
-        P2C = C-P2
-        P3C = C-P3
-        P4C = C-P4
-        P2P3 = P3-P2
-        P3P4 = P4-P3
-        angle1 = np.arctan2(P2P3[0]*P2C[1]-P2P3[1]*P2C[0],P2P3[0]*P2C[0]+P2P3[1]*P2C[1])
-        angle2 = np.arctan2(P2P3[0]*P3C[1]-P2P3[1]*P3C[0],P2P3[0]*P3C[0]+P2P3[1]*P3C[1])
-        angle3 = np.arctan2(P3P4[0]*P4C[1]-P3P4[1]*P4C[0],P3P4[0]*P4C[0]+P3P4[1]*P4C[1])
-        angles = [angle1-self.init_angles[0], angle2-self.init_angles[1], angle3-self.init_angles[2]]
-        return angles
 
 #======= Load contact points
 def load_contact_pt(contact_point_fpath, row_index):
@@ -419,7 +380,7 @@ class MoveUr5RuthEnv(gym.Env):
         
         # reward = - np.linalg.norm(self.get_pos() - self.goal) + penalty
         
-        return obs, distance, d, {}  
+        return obs, r, d, {}  
 
     def reset(self, flag=True, count=0):
         motor_control_ur5(self.robot, self.ur5JointNameToID, self.ur5_joint_names, self._ur5_init)
@@ -565,10 +526,7 @@ class MoveUr5RuthEnv(gym.Env):
     def get_obs(self):
         RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states()
         return np.concatenate((ur5_values, RUTH_motors, self.goal)).copy()
-    
-    # def get_obs(self):
-    #     ur5_values = self.pybulletDebug1.return_robot_states()
-    #     return np.concatenate((ur5_values, self.goal)).copy()
+
     
     def get_pos(self):
         #===========Get final fingertip position
@@ -596,50 +554,19 @@ class MoveUr5RuthEnv(gym.Env):
             self.viewer.close()
             self.viewer = None
 
-#======= Automate individual joint testing
-def auto_joint_test( _ur5_joint_index=None, _ur5_init = 0, \
-                    _ruth_motor_index = None, _ruth_init = 0, \
-                    _ur5_motor_limit=[-np.pi, np.pi], _ruth_motor_limit = [[-1.0, np.pi/2], [-np.pi/2, 1.0], [-0.5, 0.12]]):
-    total_step = 100
-    _RUTH_motors = [0. , 0. , 0. ]
-    _ur5_values = [0. , 0. , 0. , 0. , 0. , 0. ]
-    # _ruth_motor_limit = [[-1.0, np.pi/2], [-np.pi/2, 1.0], [-0.5, 0.12]]
-    # _ur5_motor_limit=[-np.pi, np.pi]
 
-    #==== Start from lower limit if motor limit is given
-    if _ur5_init is None and _ruth_init is None:
-        if _ur5_motor_limit is not None:
-            _ur5_init = _ur5_motor_limit[0]
-        if _ruth_motor_limit is not None:
-            _ruth_init = _ruth_motor_limit[0]
-
-    #==== Test given individual joint
-    if _ur5_joint_index is not None:
-        _ur5_values[_ur5_joint_index] = _ur5_init
-        for i in range(total_step):
-            _ur5_values[_ur5_joint_index] = _ur5_values[_ur5_joint_index] + i*_ur5_motor_limit[1]/total_step
-
-    if _ruth_motor_index is not None:
-        _RUTH_motors[_ruth_motor_index] = _ruth_init
-        for j in range(total_step):
-            _RUTH_motors[_ruth_motor_index] = _RUTH_motors[_ruth_motor_index] + j*_ruth_motor_limit[_ruth_motor_index][1]/total_step
-
-
-    return _RUTH_motors, _ur5_values
-
-
-if __name__ == "__main__":
-    import gym
-    ro = gym.make("kelin-v0", version="DIRECT")
-    sta,_ = ro.reset() 
-    ob = ro.get_obs()
-    for i in range(500):
-        a = ro.action_space.sample() #* 0 + 0.1
-        o, r, d, _ = ro.step(a)
-        # print(o)
-        if i % 20 == 0:
-            ro.reset() 
-        time.sleep(1./20.)
-    sta = ro.reset() 
-    ob = ro.get_obs()
-    pass 
+# if __name__ == "__main__":
+#     import gym
+#     ro = gym.make("kelin-v0", version="DIRECT")
+#     sta,_ = ro.reset() 
+#     ob = ro.get_obs()
+#     for i in range(500):
+#         a = ro.action_space.sample() #* 0 + 0.1
+#         o, r, d, _ = ro.step(a)
+#         # print(o)
+#         if i % 20 == 0:
+#             ro.reset() 
+#         time.sleep(1./20.)
+#     sta = ro.reset() 
+#     ob = ro.get_obs()
+#     pass 
