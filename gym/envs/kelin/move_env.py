@@ -280,11 +280,9 @@ class MoveUr5RuthEnv(gym.Env):
         
         self.version = version 
 
-        # self.action_space = spaces.Box(np.array([-1.0,]*9), np.array([1.0,]*9))
-        # self.observation_space = spaces.Box(np.array([0.0]*9), np.array([1.0]*9))
-        self.action_space = spaces.Box(np.array([-1.0,]*4), np.array([1.0,]*4))
+        self.action_space = spaces.Box(np.array([-0.01,]*4), np.array([0.01,]*4)) # resolution of motor movement action
+        # self.action_space = spaces.Box(low=np.array([-3.14, -1.0, -1.57, -0.5]), high=np.array([3.14,1.57,1,0.12]), dtype=np.float32)
         self.observation_space = spaces.Box(np.array([0.0]*13), np.array([1.0]*13))
-        # self.goal_space = spaces.Box(np.array([0.0]*9), np.array([1.0]*9))
         
         self.max_delta_action = 0.5
         
@@ -295,90 +293,91 @@ class MoveUr5RuthEnv(gym.Env):
 
     def step(self, action, flag=True, count=0):
         r = 0
-        action = np.clip(action, -1, 1) 
+        good_count = 0
+        # action = np.clip(action, -1, 1) 
         assert self.action_space.contains(action), "%r (%s) invalid"%(action, type(action))
         
-        action = action * self.max_delta_action 
+        # action = action * self.max_delta_action 
         
-        RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states() 
-        RUTH_motors = action[1:] + RUTH_motors
+        RUTH_motors_prior, ur5_values_prior = self.pybulletDebug1.return_robot_states()  # get current motor states
+         
+        ur5_values = np.copy(ur5_values_prior)
+        RUTH_motors = np.copy(RUTH_motors_prior)
+        ur5_values[5] = ur5_values[5] + action[0] # new motor states 
+        RUTH_motors = action[1:] + RUTH_motors # new motor states 
         
-        if RUTH_motors[0]>np.pi/2:
-            RUTH_motors[0] = np.pi/2
-            r -= 100
-        if RUTH_motors[0]<-1:
-            RUTH_motors[0] = -1
-            r -= 100
-        if RUTH_motors[1]>1:
-            RUTH_motors[1] = 1
-            r -= 100
-        if RUTH_motors[1]<-np.pi/2:
-            RUTH_motors[1] = -np.pi/2
-            r -= 100
-        if RUTH_motors[2]>0.12:
-            RUTH_motors[2] = 0.12
-            r -= 100
-        if RUTH_motors[2]<-0.5:
-            RUTH_motors[2] = -0.5
-            r -= 100
-            
-        ur5_values[5] = ur5_values[5] + action[0]
-        # ur5_values = self.pybulletDebug1.return_robot_states() 
-        # ur5_values = action + ur5_values
-        target = np.array([ur5_values[5],RUTH_motors[0],RUTH_motors[1],RUTH_motors[2]])  
+        target = np.array([ur5_values[5],RUTH_motors[0],RUTH_motors[1],RUTH_motors[2]])  # target motor state
         pybullet.setJointMotorControl2(self.robot, self.ur5JointNameToID['wrist_3_joint'], pybullet.POSITION_CONTROL, ur5_values[5], force=1000)
         motor_control_ruth(self.robot, self.RUTH_jointNameToID, RUTH_motors)
 
+        #====== Start moving robot to given joint states
         while(flag):
-          pybullet.stepSimulation()
-          real = self.get_obs()
-          # real = np.asarray(real[3:])
-          real = np.asarray(real[5:9])
-          err = np.sum((real-target)*(real-target))
+          pybullet.stepSimulation() # start moving robot
+          real = self.get_obs() # observed joint states
+          real = np.asarray(real[5:9]) 
+          err = np.sum((real-target)**2) # square sum of joint errors
           count = count+1
-
-          if err < 1e-3 or count==100:
-              flag = False
-        # time.sleep(1./20.)
-        #print(target)
-        obs = self.get_obs() 
-        obs = obs[5:]
-        pos = self.get_pos()
+          if err < 0.001 or count==100: # max simulation steps to reach the target joint states
+              flag = False 
         
-        for index, ur5_control in enumerate(ur5_values):
-            if ur5_control>np.pi or ur5_control<-np.pi:
-                r -= 100
-
-        #======== Define reward function
+        #====== Now the robot has moved to target states, check final motor states and finger positions for reward
+        obs = self.get_obs() # final observed joint states
+        obs = obs[5:]
         dist = []
         d = False 
+        #==== Fetch finger positions
         for j in range(3):
-            temp = np.linalg.norm(self.get_pos()[ j*3 : (j+1)*3 ] - self.goal_b[ j*3 : (j+1)*3 ]) *1000
+            temp = np.linalg.norm(self.get_pos()[ j*3 : (j+1)*3 ] - self.goal_b[ j*3 : (j+1)*3 ])  # Eucledian distance error in meter
             dist.append(temp)
         #dist2 = np.linalg.norm(self.get_pos()[3:6] - self.goal[3:6])    *1000
         #dist3 = np.linalg.norm(self.get_pos()[6:9] - self.goal[6:9])    *1000
             
-            if dist[j]<15:
-                r+=100
-            else:
-                r-=100
-        if sum(dist) <15:
-            r+=1000
-            d=True
+            # if dist[j]<15: # single finger distance within 15mm
+            #     r+=100
+        # print('Distance error: ',dist)
+
         r-=sum(dist)
-        distance = sum(dist)
+        for nfinger, dist_e in enumerate(dist):
+            if dist_e <0.015:
+                r+=10
+                print("Good motor", nfinger, ". Distance: ", dist_e)
+        if sum(dist) <0.015:
+            r+=100
+            if all(dist_e <0.015 for dist_e in dist ):
+                print("Sum dist error good. ", dist)
+                r+=100
+                good_count += 1
+                
+
         
+        if RUTH_motors[0]>1.57:
+            print('motor 0 out of range',RUTH_motors[0])
+            # RUTH_motors[0] = 1.57
+            r -= 10
+        if RUTH_motors[0]<-1:
+            print('motor 0 out of range',RUTH_motors[0])
+            # RUTH_motors[0] = -1
+            r -= 10
+        if RUTH_motors[1]>1:
+            print('motor 1 out of range',RUTH_motors[1])
+            # RUTH_motors[1] = 1
+            r -= 10   
+        if RUTH_motors[1]<-1.57:  
+            print('motor 1 out of range',RUTH_motors[1])
+            # RUTH_motors[1] = -1.57
+            r -= 10
+        if RUTH_motors[2]>0.12:
+            print('motor 2 out of range',RUTH_motors[2])
+            # RUTH_motors[2] = 0.12
+            r -= 10
+        if RUTH_motors[2]<-0.5:
+            print('motor 2 out of range ', RUTH_motors[2])
+            # RUTH_motors[2] = -0.5
+            r -= 10
+            
+        if good_count > 20:
+            d=True
         
-        #if dist1 < 15 or dist2<15 or dist3<15:
-        #    r += 100
-           
-        #elif dist1 >= 15 or dist2>=15 or dist3>=15:
-        #    r -= 100
-        #elif dist1 < 15 and dist2<15 and dist3<15:
-        #    r+=500
-        #    d=True
-        
-        # reward = - np.linalg.norm(self.get_pos() - self.goal) + penalty
         
         return obs, r, d, {}  
 
@@ -402,10 +401,12 @@ class MoveUr5RuthEnv(gym.Env):
         return state[5:]
     
     def reset_goal(self, goal=None): 
-        workspace = np.load('/home/xz/RL_IK/gym/envs/kelin/contact_points.npy')
-        a = np.load('/home/xz/RL_IK/gym/envs/kelin/contact_list.npy')
-        contact_idx = choice(a)
-        #np.random.randint(0,len(workspace))
+        workspace = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_points.npy')
+        # a = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_list.npy')
+        # contact_idx = choice(a)
+        contact_idx = np.random.randint(0,10)
+
+        # contact_idx = np.random.randint(0,len(workspace))
         #print(contact_idx)
         goal_b = workspace[contact_idx,:]
         
