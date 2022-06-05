@@ -1,6 +1,7 @@
 import gym
 from stable_baselines3 import HerReplayBuffer, DDPG, DQN, SAC, TD3
 from stable_baselines3.her.goal_selection_strategy import GoalSelectionStrategy
+from stable_baselines3.her import HERGoal
 from stable_baselines3.common.envs import BitFlippingEnv
 from stable_baselines3.common.vec_env import DummyVecEnv
 

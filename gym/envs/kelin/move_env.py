@@ -17,12 +17,6 @@ import numpy as np
 import time
 import pybullet_data
 from scipy.spatial.transform import Rotation as R
-from gym.envs.kelin.ruth_grasping_kinematics import ruthModel
-from gym.envs.kelin.pybullet_object_models import ycb_objects
-import os
-# import open3d as o3d
-import matplotlib.pyplot as plt
-import pandas as pd
 from random import choice
 
 
@@ -178,7 +172,6 @@ class MoveUr5RuthEnv(gym.Env):
     }
 
     def __init__(self, version):
-        rM = ruthModel()
         #========= Initialize environment
         if version == 'GUI':
             physicsClient = pybullet.connect(pybullet.GUI)
@@ -336,44 +329,69 @@ class MoveUr5RuthEnv(gym.Env):
             #     r+=100
         # print('Distance error: ',dist)
 
-        r-=sum(dist)
+
+        #======= REWARD FUNCTION
+        MOTOR_PENALTY = -1
+        MOTOR_REWARD = 0.2
+        DIS_REWARD = 1
+
         for nfinger, dist_e in enumerate(dist):
             if dist_e <0.015:
-                r+=10
+                r+= DIS_REWARD
                 print("Good motor", nfinger, ". Distance: ", dist_e)
-        if sum(dist) <0.015:
+            else:
+                r-= dist_e
+        
+        # if sum(dist) <15:
+        #     r+=1000
+        if all(dist_e <0.015 for dist_e in dist ):
+            print("Sum dist error good. ", dist)
             r+=100
-            if all(dist_e <0.015 for dist_e in dist ):
-                print("Sum dist error good. ", dist)
-                r+=100
-                good_count += 1
+            good_count += 1
                 
 
         
-        if RUTH_motors[0]>1.57:
-            print('motor 0 out of range',RUTH_motors[0])
-            # RUTH_motors[0] = 1.57
-            r -= 10
-        if RUTH_motors[0]<-1:
-            print('motor 0 out of range',RUTH_motors[0])
-            # RUTH_motors[0] = -1
-            r -= 10
-        if RUTH_motors[1]>1:
-            print('motor 1 out of range',RUTH_motors[1])
-            # RUTH_motors[1] = 1
-            r -= 10   
-        if RUTH_motors[1]<-1.57:  
-            print('motor 1 out of range',RUTH_motors[1])
-            # RUTH_motors[1] = -1.57
-            r -= 10
-        if RUTH_motors[2]>0.12:
-            print('motor 2 out of range',RUTH_motors[2])
-            # RUTH_motors[2] = 0.12
-            r -= 10
-        if RUTH_motors[2]<-0.5:
-            print('motor 2 out of range ', RUTH_motors[2])
-            # RUTH_motors[2] = -0.5
-            r -= 10
+        # if RUTH_motors[0]>1.57:
+        #     print('motor 0 out of range',RUTH_motors[0])
+        #     # RUTH_motors[0] = 1.57
+        #     r -= MOTOR_PENALTY 
+        # else:
+        #     r+=MOTOR_REWARD
+
+        # if RUTH_motors[0]<-1:
+        #     print('motor 0 out of range',RUTH_motors[0])
+        #     # RUTH_motors[0] = -1
+        #     r += MOTOR_PENALTY 
+        # else:
+        #     r+= MOTOR_REWARD
+        
+        # if RUTH_motors[1]>1:
+        #     print('motor 1 out of range',RUTH_motors[1])
+        #     # RUTH_motors[1] = 1
+        #     r += MOTOR_PENALTY
+        # else:
+        #     r+= MOTOR_REWARD
+
+        # if RUTH_motors[1]<-1.57:  
+        #     print('motor 1 out of range',RUTH_motors[1])
+        #     # RUTH_motors[1] = -1.57
+        #     r += MOTOR_PENALTY
+        # else:
+        #     r+= MOTOR_REWARD
+
+        # if RUTH_motors[2]>0.12:
+        #     print('motor 2 out of range',RUTH_motors[2])
+        #     # RUTH_motors[2] = 0.12
+        #     r += MOTOR_PENALTY
+        # else:
+        #     r+= MOTOR_REWARD
+
+        # if RUTH_motors[2]<-0.5:
+        #     print('motor 2 out of range ', RUTH_motors[2])
+        #     # RUTH_motors[2] = -0.5
+        #     r += MOTOR_PENALTY
+        # else:
+        #     r+= MOTOR_REWARD
             
         if good_count > 20:
             d=True
@@ -404,7 +422,7 @@ class MoveUr5RuthEnv(gym.Env):
         workspace = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_points.npy')
         # a = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_list.npy')
         # contact_idx = choice(a)
-        contact_idx = np.random.randint(0,10)
+        contact_idx = np.random.randint(0,100)
 
         # contact_idx = np.random.randint(0,len(workspace))
         #print(contact_idx)

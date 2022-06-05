@@ -1,13 +1,6 @@
 # Set up UR5 and RUTH for simulation
-# This file simply tests UR5 and RUTH movement control
-# 2021-Oct-23 @Xian Zhang
-#=========================READ ME==========================
-# When calling main(mode, timer), first parameter takes 0 or 1 for control mode:
-# (0) for manual motor control, (1) to start automated testing
-# timer parameter is how long you want the simulation to run for.
-# Edit automated testing in function auto_joint_test(), by specifying which joints to start auto testing
-# Final UR5 and RUTH joint states, final fingertip position and orientation are saved in array output_motor_fingertip
-
+# This file tests UR5 and RUTH movement control
+# 2022 RAL Kelin
 
 
 
@@ -23,6 +16,7 @@ import os
 # import open3d as o3d
 import matplotlib.pyplot as plt
 import pandas as pd
+from random import choice
 
 class FingerAngles:
     def __init__(self, robot, linkNameToID):
@@ -185,23 +179,6 @@ class pybulletDebug:
         self.RfId = pybullet.addUserDebugParameter("RUTH fingers" , -0.5 , 0.12 , 0.)
 
     
-    # def return_robot_states(self):
-    #     # motor_positions = np.array([pybullet.readUserDebugParameter(self.Rm1Id), 
-    #     #                             pybullet.readUserDebugParameter(self.Rm2Id), 
-    #     #                             pybullet.readUserDebugParameter(self.RfId)]) 
-    #     # # RUTH motor 1 [-1.57 , 3.14], motor 2 [-3.14 , 1.57],  RUTH finger bend [-0.5, 0.5]
-    #     # ur5_values = np.array([pybullet.readUserDebugParameter(self.U1Id), 
-    #     #         pybullet.readUserDebugParameter(self.U2Id), 
-    #     #         pybullet.readUserDebugParameter(self.U3Id), 
-    #     #         pybullet.readUserDebugParameter(self.U4Id), 
-    #     #         pybullet.readUserDebugParameter(self.U5Id), 
-    #     #         pybullet.readUserDebugParameter(self.U6Id)])
-    #     ur5_values = [pybullet.getJointState(1,1)[0],pybullet.getJointState(1,2)[0],
-    #                     pybullet.getJointState(1,3)[0],pybullet.getJointState(1,4)[0],
-    #                     pybullet.getJointState(1,5)[0],pybullet.getJointState(1,6)[0]]
-    #     motor_positions = [pybullet.getJointState(1,10)[0],pybullet.getJointState(1,15)[0],
-    #                     -(pybullet.getJointState(1,13)[0]+0.12745044+0.55)]
-    #     return motor_positions, ur5_values 
     def return_robot_states(self):
         # motor_positions = np.array([pybullet.readUserDebugParameter(self.Rm1Id), 
         #                             pybullet.readUserDebugParameter(self.Rm2Id), 
@@ -216,7 +193,9 @@ class pybulletDebug:
         ur5_values = [pybullet.getJointState(1,1)[0],pybullet.getJointState(1,2)[0],
                         pybullet.getJointState(1,3)[0],pybullet.getJointState(1,4)[0],
                         pybullet.getJointState(1,5)[0],pybullet.getJointState(1,6)[0]]
-        return ur5_values 
+        motor_positions = [pybullet.getJointState(1,10)[0],pybullet.getJointState(1,15)[0],
+                        -(pybullet.getJointState(1,13)[0]+0.12745044+0.55)]
+        return motor_positions, ur5_values 
     
 import gym
 from gym import spaces 
@@ -329,17 +308,17 @@ class MoveUr5RuthEnv(gym.Env):
 
         self.pybulletDebug1 = pybulletDebug('motors', self.robot, self.ur5LinkNameToID)
         self._RUTH_init = [0. , 0. , 0. ]
-        self._ur5_init = [0. , 0. , 0. , 0. , 0. , 0. ]
+        self._ur5_init = [0.00017069140745350854, 1.5540618886045958, -1.5886830943681458, -1.6043969354088452, 1.5707558854894739, -0.0009489847876093962 ]
         
         self.version = version 
 
         # self.action_space = spaces.Box(np.array([-1.0,]*9), np.array([1.0,]*9))
         # self.observation_space = spaces.Box(np.array([0.0]*9), np.array([1.0]*9))
-        self.action_space = spaces.Box(np.array([-1.0,]*6), np.array([1.0,]*6))
-        self.observation_space = spaces.Box(np.array([0.0]*6), np.array([1.0]*6))
+        self.action_space = spaces.Box(np.array([-1.0,]*4), np.array([1.0,]*4))
+        self.observation_space = spaces.Box(np.array([0.0]*4), np.array([1.0]*4))
+        self.goal_space = spaces.Box(np.array([0.0]*9), np.array([1.0]*9))
         
-        
-        self.max_delta_action = 0.1
+        self.max_delta_action = 0.5
         
         
     def seed(self, seed=None):
@@ -347,98 +326,246 @@ class MoveUr5RuthEnv(gym.Env):
         return [seed]
 
     def step(self, action, flag=True, count=0):
+        r = 0
         action = np.clip(action, -1, 1) 
         assert self.action_space.contains(action), "%r (%s) invalid"%(action, type(action))
         
         action = action * self.max_delta_action 
         
-        # RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states() 
-        # RUTH_motors = action[:3] + RUTH_motors
-        # ur5_values = action[3:] + ur5_values
-        ur5_values = self.pybulletDebug1.return_robot_states() 
-        ur5_values = action + ur5_values
-        for index, ur5_control in enumerate(ur5_values):
-            if ur5_control>=3:
-                ur5_values[index]=3
-            elif ur5_control<-3:
-                ur5_values[index]=-3
-        target = ur5_values   
-        motor_control_ur5(self.robot, self.ur5JointNameToID, self.ur5_joint_names, ur5_values)
-        # motor_control_ruth(self.robot, self.RUTH_jointNameToID, RUTH_motors)
+        RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states() 
+        RUTH_motors = action[1:] + RUTH_motors
+        
+            
+        ur5_values[5] = ur5_values[5] + action[0]
+        # ur5_values = self.pybulletDebug1.return_robot_states() 
+        # ur5_values = action + ur5_values
+        target = np.array([ur5_values[5],RUTH_motors[0],RUTH_motors[1],RUTH_motors[2]])  
+        pybullet.setJointMotorControl2(self.robot, self.ur5JointNameToID['wrist_3_joint'], pybullet.POSITION_CONTROL, ur5_values[5], force=1000)
+        motor_control_ruth(self.robot, self.RUTH_jointNameToID, RUTH_motors)
         while(flag):
           pybullet.stepSimulation()
           real = self.get_obs()
           # real = np.asarray(real[3:])
-          real = np.asarray(real)
+          real = np.asarray(real[5:9])
           err = np.sum((real-target)*(real-target))
           count = count+1
-          #print(err)
+
           if err < 1e-3 or count==100:
               flag = False
         # time.sleep(1./20.)
-        # print(target)
+        #print(target)
         obs = self.get_obs() 
-        reward = - np.linalg.norm(self.get_pos() - self.goal) 
+        obs = obs[5:]
+        pos = self.get_pos()
+        
+        for index, ur5_control in enumerate(ur5_values):
+            if ur5_control>np.pi or ur5_control<-np.pi:
+                r -= 100
+
+        #======== Define reward function
+        dist = []
         d = False 
-        return obs, reward, d, {}  
+        for j in range(3):
+            temp = np.linalg.norm(self.get_pos()[ j*3 : (j+1)*3 ] - self.goal_b[ j*3 : (j+1)*3 ]) *1000
+            dist.append(temp)
+        #dist2 = np.linalg.norm(self.get_pos()[3:6] - self.goal[3:6])    *1000
+        #dist3 = np.linalg.norm(self.get_pos()[6:9] - self.goal[6:9])    *1000
+            
+            if dist[j]<15:
+                r+=100
+            else:
+                r-=100
+        if sum(dist) <15:
+            r+=1000
+            d=True
+        r-=sum(dist)
+        distance = sum(dist)
+        
+        if RUTH_motors[0]>np.pi/2:
+            RUTH_motors[0] = np.pi/2
+            r -= 100
+        if RUTH_motors[0]<-1:
+            RUTH_motors[0] = -1
+            r -= 100
+        if RUTH_motors[1]>1:
+            RUTH_motors[1] = 1
+            r -= 100
+        if RUTH_motors[1]<-np.pi/2:
+            RUTH_motors[1] = -np.pi/2
+            r -= 100
+        if RUTH_motors[2]>0.12:
+            RUTH_motors[2] = 0.12
+            r -= 100
+        if RUTH_motors[2]<-0.5:
+            RUTH_motors[2] = -0.5
+            r -= 100
+        
+        #if dist1 < 15 or dist2<15 or dist3<15:
+        #    r += 100
+           
+        #elif dist1 >= 15 or dist2>=15 or dist3>=15:
+        #    r -= 100
+        #elif dist1 < 15 and dist2<15 and dist3<15:
+        #    r+=500
+        #    d=True
+        
+        # reward = - np.linalg.norm(self.get_pos() - self.goal) + penalty
+        
+        return obs, r, d, {}  
 
     def reset(self, flag=True, count=0):
         motor_control_ur5(self.robot, self.ur5JointNameToID, self.ur5_joint_names, self._ur5_init)
         motor_control_ruth(self.robot, self.RUTH_jointNameToID, self._RUTH_init)
-        target=np.array([0,0,0,0,0,0])
-        # target=np.array([0,0,0,0,0,0,0,0,0])
+        target=np.array([0.00017069140745350854, 1.5540618886045958, -1.5886830943681458, -1.6043969354088452, 1.5707558854894739, -0.0009489847876093962,0,0,0 ])
+        self.goal, idx = self.reset_goal()
         while(flag):
           pybullet.stepSimulation()
           real = self.get_obs()
-          real = np.asarray(real)
+          real = np.asarray(real[:9])
           err = np.sum((real-target)*(real-target))
           count=count+1
           #print(err)
           if err < 1e-3 or count==100:
               flag = False
         pybullet.stepSimulation()
-        self.reset_goal() 
+        self.point_transform()
         state = self.get_obs() 
-        return state 
+        return state[5:], idx
     
     def reset_goal(self, goal=None): 
-        if goal is None:
-            # goal = random.rand(9)
-            xyz = 0.5*(random.rand(3)*2-1)
-            xyz = abs(xyz)
-            xyzd = random.rand(3)*0.1
-            goal = np.array(xyz.tolist()) + xyzd 
+        workspace = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_points.npy')
+        a = np.load('E:\REDS-Lab\python-project\RUTH_RL\gym\envs\kelin\contact_list.npy')
+        contact_idx = choice(a)
+        #np.random.randint(0,len(workspace))
+        #print(contact_idx)
+        goal_b = workspace[contact_idx,:]
+        
+        
+        goal_b1 = np.array([[goal_b[0]],[goal_b[1]],[goal_b[2]],[1]])
+        goal_b2 = np.array([[goal_b[3]],[goal_b[4]],[goal_b[5]],[1]])
+        goal_b3 = np.array([[goal_b[6]],[goal_b[7]],[goal_b[8]],[1]])
+        Q = pybullet.getQuaternionFromEuler([0,np.pi/2,0])
+        R = pybullet.getMatrixFromQuaternion(Q)
+        #p = pybullet.getLinkState(self.robot,self.ur5LinkNameToID['ee_link'])[0]
+        p = np.array([0.464,-0.11,0.66])
+        T_eb = np.array([[R[0],R[1],R[2],p[0]],[R[3],R[4],R[5],p[1]],[R[6],R[7],R[8],p[2]],[0,0,0,1]])
+        T_be = np.linalg.inv(T_eb)       
+        goal_e1 = np.dot(T_be,goal_b1)
+        goal_e2 = np.dot(T_be,goal_b2)
+        goal_e3 = np.dot(T_be,goal_b3)
+        
+        goal = np.zeros(9)
+        goal[0] = goal_e1[0]
+        goal[1] = goal_e1[1]
+        goal[2] = goal_e1[2]
+        goal[3] = goal_e2[0]
+        goal[4] = goal_e2[1]
+        goal[5] = goal_e2[2]
+        goal[6] = goal_e3[0]
+        goal[7] = goal_e3[1]
+        goal[8] = goal_e3[2]                                               
+        # if goal is None:
+        #     r1 = random.uniform(0,0.05)
+        #     theta1 = random.uniform(0,2*np.pi)
+        #     x1 = r1*np.cos(theta1)+0.4576751227292945
+        #     y1 = r1*np.sin(theta1)-0.1098084577936703
+        #     r2 = random.uniform(0,0.05)
+        #     theta2 = random.uniform(0,2*np.pi)
+        #     x2 = r2*np.cos(theta2)+0.4576751227292945
+        #     y2 = r2*np.sin(theta2)-0.1098084577936703
+        #     r3 = random.uniform(0,0.05)
+        #     theta3 = random.uniform(0,2*np.pi)
+        #     x3 = r3*np.cos(theta3)+0.4576751227292945
+        #     y3 = r3*np.sin(theta3)-0.1098084577936703
+        #     z = 0.352
+        #     xyz = np.array([x1,y1,z,x2,y2,z,x3,y3,z])
+
+        #     goal = xyz
         if goal.shape != (9,):
             print("the shape of goal should be (9,)")
         self.goal = goal 
+        self.goal_b = goal_b
+        
+        return self.goal,contact_idx
+    
+    def point_transform(self):
+        p = pybullet.getLinkState(self.robot,self.ur5LinkNameToID['ee_link'])[0]
+        a, ur_joints = self.pybulletDebug1.return_robot_states()
+        ur_joints[3] = ur_joints[3] + random.uniform(-np.pi/6, np.pi/6)
+        ur_joints[4] = ur_joints[4] + random.uniform(-np.pi/6, np.pi/6)
+        motor_control_ur5(self.robot, self.ur5JointNameToID, self.ur5_joint_names, ur_joints)
+        for i in range(50):
+            pybullet.stepSimulation()
+        p = pybullet.getLinkState(self.robot,self.ur5LinkNameToID['ee_link'])[0]
+        Q = pybullet.getLinkState(self.robot,self.ur5LinkNameToID['ee_link'])[1]
+        R = pybullet.getMatrixFromQuaternion(Q)
+        T_eb = np.array([[R[0],R[1],R[2],p[0]],[R[3],R[4],R[5],p[1]],[R[6],R[7],R[8],p[2]],[0,0,0,1]])
+        goal_e1 = np.array([[self.goal[0]],[self.goal[1]],[self.goal[2]],[1]])
+        goal_e2 = np.array([[self.goal[3]],[self.goal[4]],[self.goal[5]],[1]])
+        goal_e3 = np.array([[self.goal[6]],[self.goal[7]],[self.goal[8]],[1]])
+        goal_b1 = np.dot(T_eb,goal_e1).T[0,:3]
+        goal_b2 = np.dot(T_eb,goal_e2).T[0,:3]
+        goal_b3 = np.dot(T_eb,goal_e3).T[0,:3]
+        cp_list = np.vstack((goal_b1,goal_b2,goal_b3))
+        cp12 = (cp_list[1] - cp_list[0]) / np.linalg.norm(cp_list[1] - cp_list[0])
+        cp13 = (cp_list[2] - cp_list[0]) / np.linalg.norm(cp_list[2] - cp_list[0])
+        cp_normal = np.cross(cp12, cp13) / np.linalg.norm(np.cross(cp12, cp13))
+        if cp_normal[2] < 0 : # if normal vector is downward
+          cp_normal *= -1
+        goal_b1 = goal_b1 + 0.1*cp_normal
+        goal_b2 = goal_b2 + 0.1*cp_normal
+        goal_b3 = goal_b3 + 0.1*cp_normal
+        self.goal_b = np.hstack((goal_b1,goal_b2,goal_b3))
         if self.version == "GUI":
-            visualize_contact_pt(self.goal[:3], [1,0,0,1], 2)
-            visualize_contact_pt(self.goal[3:6], [0,1,0,1], 2)
-            visualize_contact_pt(self.goal[6:], [0,0,1,1], 2) 
-        return self.goal 
+            visualize_contact_pt(self.goal_b[:3], [1,0,0,1], 2)
+            visualize_contact_pt(self.goal_b[3:6], [0,1,0,1], 2)
+            visualize_contact_pt(self.goal_b[6:], [0,0,1,1], 2) 
+        cp_center = np.empty([3]) #center of the 3 contact points
+        for i in range (3):
+          cp_center[i] = sum(cp_list[:,i])/3
+        cp_center = cp_center + 0.1*cp_normal
+        orientation = np.array(Q)
+        self.visualize_frame(orientation,cp_center)
+            
+    def visualize_frame(self, orien, shape_CoM):
+        boxID = pybullet.createCollisionShape(pybullet.GEOM_BOX, halfExtents = [0.005,0.2,0.15])
+        visualShapeId = -1
+
+        bound_box = pybullet.createMultiBody(0.01, boxID, visualShapeId, [0.15,0.2,0.01])
+
+        # Disable Collisions with external objects
+        pybullet.setCollisionFilterGroupMask(bound_box, -1, 0, 0)
+        pybullet.changeVisualShape(bound_box, -1, rgbaColor=[0,0,1,0.2])
+        constraint = pybullet.createConstraint(parentBodyUniqueId=bound_box,
+                parentLinkIndex=-1,
+                childBodyUniqueId=-1,
+                childLinkIndex=-1,
+                jointType=pybullet.JOINT_FIXED,
+                jointAxis=[0,0,0],
+                parentFramePosition=[0,0,0],
+                childFramePosition= shape_CoM,
+                childFrameOrientation=orien)
+        
+    def get_obs(self):
+        RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states()
+        return np.concatenate((ur5_values, RUTH_motors, self.goal)).copy()
     
     # def get_obs(self):
-    #     RUTH_motors, ur5_values = self.pybulletDebug1.return_robot_states()
-    #     return np.concatenate((RUTH_motors, ur5_values))
-    
-    def get_obs(self):
-        ur5_values = self.pybulletDebug1.return_robot_states()
-        return ur5_values
+    #     ur5_values = self.pybulletDebug1.return_robot_states()
+    #     return np.concatenate((ur5_values, self.goal)).copy()
     
     def get_pos(self):
         #===========Get final fingertip position
         # getLinkState returns: 0. CoM coordinates, 1. CoM orientation
         fingertip_state = {}
         fingertip_pos = []
-        fingertip_ori = [] #orientation of CoM of fingertip
+        fingertip_ori = [] #orientation of CenvoM of fingertip
         fingertip_links = ['Phal_1C','Phal_2C','Phal_3C']
         for link_name in fingertip_links:
             fingertip_state[link_name] = pybullet.getLinkState(self.robot, self.RUTH_linkNameToID[link_name])
             fingertip_pos.append(fingertip_state[link_name][0])
             fingertip_ori.append(fingertip_state[link_name][1])
-        state = pybullet.getLinkState(self.robot, self.ur5LinkNameToID['ee_link'])
-        return state[0]
-        # return np.array(fingertip_pos).ravel() 
+        return np.array(fingertip_pos).ravel() 
     
 
 
@@ -487,10 +614,10 @@ def auto_joint_test( _ur5_joint_index=None, _ur5_init = 0, \
 
 if __name__ == "__main__":
     import gym
-    ro = gym.make("kelin-v0", version="GUI")
+    ro = gym.make("kelin-v0", version="DIRECT")
     sta = ro.reset() 
     ob = ro.get_obs()
-    # print(ob)
+    print(ob)
     for i in range(500):
         a = ro.action_space.sample() #* 0 + 0.1
         o, r, d, _ = ro.step(a)
@@ -500,5 +627,5 @@ if __name__ == "__main__":
         time.sleep(1./20.)
     sta = ro.reset() 
     ob = ro.get_obs()
-    # print(ob)
+    print(ob)
     pass 

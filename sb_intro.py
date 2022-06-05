@@ -2,7 +2,7 @@ import gym
 import os
 import time
 import numpy as np
-from stable_baselines3 import PPO, SAC, TD3
+from stable_baselines3 import SAC, TD3
 from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.monitor import Monitor
@@ -73,20 +73,29 @@ def decay_schedule(initial_value: float) -> Callable[[float], float]:
 
 
 model_dir = "models/SAC"
-log_dir = f"tmp/log2/SAC-{int(time.time())}"
+model_dir2 = "models/TD3"
+
+
+log_dir = "tmp/ur5/"
+# log_dir = f"tmp/log/SAC-{int(time.time())}"
 os.makedirs(log_dir, exist_ok=True)
 os.makedirs(model_dir, exist_ok=True)
+os.makedirs(model_dir2, exist_ok=True)
+
 
 env = gym.make('kelin-v0',version="DIRECT")
 env = Monitor(env, log_dir)
-model = SAC("MlpPolicy",env, verbose=1, tensorboard_log=log_dir, learning_rate=decay_schedule(0.001), ent_coef='auto', batch_size=512, learning_starts=1000)
+model = SAC("MlpPolicy",env, verbose=1, tensorboard_log=log_dir,  ent_coef='auto', batch_size=1024, learning_starts=1000) #learning_rate=decay_schedule(0.001)
+model2 = TD3("MlpPolicy",env, verbose=1, tensorboard_log=log_dir, batch_size=1024)
 callback = SaveOnBestTrainingRewardCallback(check_freq=5e3, log_dir=log_dir)
 
 
 
 TIMESTEPS = 3e5
-for i in range(10):
+for i in range(2):
     # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
     model.learn(total_timesteps=TIMESTEPS, callback = callback, eval_freq=1000, eval_log_path=log_dir)
+    model.save(f"{model_dir}/{int(time.time())}")
+    # model2.learn(total_timesteps=TIMESTEPS, callback = callback, eval_freq=1000, eval_log_path=log_dir)
+    # model2.save(f"{model_dir2}/{int(time.time())}")
 
-    model.save(f"{model_dir}/{int(TIMESTEPS*i)}")
